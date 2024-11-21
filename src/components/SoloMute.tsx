@@ -13,9 +13,6 @@ function SoloMute({ trackActor }: Props) {
   const currentTrackId = context.track.id;
   const { send } = MixerContext.useActorRef();
 
-  console.log("context", context);
-  console.log("trackActor", trackActor);
-
   return (
     <div className="flex gap8">
       <Toggle

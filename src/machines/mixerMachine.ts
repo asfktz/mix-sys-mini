@@ -34,7 +34,6 @@ export const mixerMachine = setup({
           },
         });
       });
-      console.log("trackActorRefs", trackActorRefs);
 
       return { trackActorRefs };
     }),
