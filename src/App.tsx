@@ -1,15 +1,16 @@
-import { useMachine } from "@xstate/react";
-import { mixerMachine } from "./machines";
-import Track from "./components/Track";
+import { MixerContext } from "./machines/mixerMachine";
+import Mixer from "./components/Mixer";
 
 function App() {
-  const [state] = useMachine(mixerMachine);
-
-  const { trackActorRefs } = state.context;
-
-  return trackActorRefs.map((trackRef, i) => (
-    <Track key={i} trackRef={trackRef} index={i} />
-  ));
+  return (
+    <MixerContext.Provider
+      options={{
+        systemId: "mixer",
+      }}
+    >
+      <Mixer />
+    </MixerContext.Provider>
+  );
 }
 
 export default App;
