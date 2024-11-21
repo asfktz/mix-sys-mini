@@ -82,7 +82,6 @@ export const mixerMachine = setup({
 
               if (!soloed) {
                 if (currentTrackId === track.id) {
-                  console.log("unsoloed!");
                   enqueue.sendTo(({ system }) => system.get("mixer"), {
                     type: "SET_MESSAGE",
                     message: `Unsoloed ${track.id}`,
@@ -106,7 +105,7 @@ export const mixerMachine = setup({
         },
         SET_MESSAGE: {
           actions: assign({
-            message: ({ context, event }) => event.message,
+            message: ({ event }) => event.message,
           }),
         },
       },
