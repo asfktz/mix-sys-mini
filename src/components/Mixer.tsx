@@ -19,9 +19,9 @@ function Mixer() {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       <div>{message}</div>
-      <div className="flex gap-4">{tracks}</div>
+      <div>{tracks}</div>
     </div>
   );
 }

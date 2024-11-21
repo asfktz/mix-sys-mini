@@ -18,7 +18,7 @@ export const mixerMachine = setup({
     context: {} as {
       trackActorRefs: ActorRefFrom<typeof trackMachine>[];
       tracks: SourceTrack[];
-      message?: string;
+      message?: string | null;
     },
     events: {} as
       | {
@@ -26,6 +26,7 @@ export const mixerMachine = setup({
           trackInfo: { track: SourceTrack };
           systemId: string;
         }
+      | { type: "SET_MESSAGE"; message: string }
       | { type: "MUTED_BY_SOLO"; id: string },
   },
   actions: {
@@ -49,7 +50,7 @@ export const mixerMachine = setup({
   context: {
     tracks,
     trackActorRefs: [],
-    message: "",
+    message: null,
   },
   states: {
     initializing: {
@@ -84,7 +85,7 @@ export const mixerMachine = setup({
                 if (currentTrackId === track.id) {
                   enqueue.sendTo(({ system }) => system.get("mixer"), {
                     type: "SET_MESSAGE",
-                    message: `Unsoloed ${track.id}`,
+                    message: `${track.id} unsoloed`,
                   });
                 }
                 enqueue.sendTo(trackActor, {
