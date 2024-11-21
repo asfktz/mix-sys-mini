@@ -1,11 +1,19 @@
 import { ActorRefFrom } from "xstate";
 import { trackMachine } from "@/machines/trackMachine";
 import SoloMute from "./SoloMute";
+import { useSelector } from "@xstate/react";
 
 interface TrackProps {
   trackActor: ActorRefFrom<typeof trackMachine>;
 }
 
 export default function Track({ trackActor }: TrackProps) {
-  return <SoloMute trackActor={trackActor} />;
+  const { context } = useSelector(trackActor, (state) => state);
+
+  return (
+    <>
+      {/* {context.soloed && <div>Soloed!</div>} */}
+      <SoloMute trackActor={trackActor} />
+    </>
+  );
 }
