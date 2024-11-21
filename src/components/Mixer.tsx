@@ -9,13 +9,9 @@ function Mixer() {
   );
 
   const tracks = trackActorRefs?.map(
-    (trackActor: ActorRefFrom<typeof trackMachine>, i: number) => {
-      return (
-        <div key={i}>
-          <Track trackActor={trackActor} />
-        </div>
-      );
-    },
+    (trackActor: ActorRefFrom<typeof trackMachine>, i: number) => (
+      <Track key={i} trackActor={trackActor} />
+    ),
   );
 
   return (
