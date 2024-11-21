@@ -3,7 +3,7 @@ import { trackMachine } from "./trackMachine";
 import { createActorContext } from "@xstate/react";
 
 type SourceTrack = {
-  id: number;
+  id: string;
 };
 
 const tracks = [
@@ -67,7 +67,8 @@ export const mixerMachine = setup({
           }),
         },
         MUTED_BY_SOLO: {
-          actions: enqueueActions(({ context, enqueue }) => {
+          actions: enqueueActions(({ context, event, enqueue }) => {
+            const currentTrackId = event.id;
             const mutedTracks = context.trackActorRefs?.filter(
               (trackActor) => !trackActor.getSnapshot().context.soloed,
             );
@@ -75,9 +76,12 @@ export const mixerMachine = setup({
               mutedTracks?.length === context.trackActorRefs!.length;
 
             context.trackActorRefs?.forEach((trackActor) => {
-              const { soloed } = trackActor.getSnapshot().context;
+              const { soloed, track } = trackActor.getSnapshot().context;
 
               if (!soloed) {
+                if (currentTrackId === track.id) {
+                  console.log("unsoloed!");
+                }
                 enqueue.sendTo(trackActor, {
                   type: "MUTE",
                 });

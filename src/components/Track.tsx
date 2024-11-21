@@ -4,7 +4,6 @@ import SoloMute from "./SoloMute";
 
 interface TrackProps {
   trackActor: ActorRefFrom<typeof trackMachine>;
-  trackId: number;
 }
 
 export default function Track({ trackActor }: TrackProps) {

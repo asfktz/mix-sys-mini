@@ -1,8 +1,8 @@
-import mixerMachine from "./mixerMachine";
+import { mixerMachine } from "./mixerMachine";
 import { assign, setup, ActorRefFrom } from "xstate";
 
 type SourceTrack = {
-  id: number;
+  id: string;
 };
 
 export const trackMachine = setup({
