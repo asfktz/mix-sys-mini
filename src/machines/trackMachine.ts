@@ -1,5 +1,5 @@
 import { mixerMachine } from "./mixerMachine";
-import { assign, setup, ActorRefFrom, assertEvent } from "xstate";
+import { assign, setup, ActorRefFrom } from "xstate";
 
 type SourceTrack = {
   id: number;
@@ -19,19 +19,11 @@ export const trackMachine = setup({
     events: {} as { type: "SOLO" } | { type: "MUTE" } | { type: "UNMUTE" },
   },
   actions: {
-    toggleSolo: assign(({ context, event }) => {
-      assertEvent(event, "SOLO");
+    toggleSolo: assign(({ context }) => {
       return { soloed: !context.soloed, muted: context.muted };
     }),
-    muteTrack: assign(({ event }) => {
-      assertEvent(event, "MUTE");
-      console.log("muting track");
-      return { muted: true };
-    }),
-    unmuteTrack: assign(({ event }) => {
-      assertEvent(event, "UNMUTE");
-      return { muted: false };
-    }),
+    muteTrack: assign({ muted: true }),
+    unmuteTrack: assign({ muted: false }),
   },
 }).createMachine({
   context: ({ input }) => ({
