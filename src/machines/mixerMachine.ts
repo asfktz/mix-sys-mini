@@ -6,7 +6,12 @@ type SourceTrack = {
   id: number;
 };
 
-const tracks = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+const tracks = [
+  { id: "track1" },
+  { id: "track2" },
+  { id: "track3" },
+  { id: "track4" },
+];
 
 export const mixerMachine = setup({
   types: {
@@ -26,8 +31,8 @@ export const mixerMachine = setup({
     buildTracks: assign(({ context, spawn, self }) => {
       const trackActorRefs = context.tracks.map((track) => {
         return spawn(trackMachine, {
-          systemId: `track${track.id}`,
-          id: `track${track.id}`,
+          systemId: track.id,
+          id: track.id,
           input: {
             track,
             trackActorRef: self,
