@@ -6,20 +6,7 @@ type SourceTrack = {
   id: number;
 };
 
-const tracks = [
-  {
-    id: 1,
-  },
-  {
-    id: 2,
-  },
-  {
-    id: 3,
-  },
-  {
-    id: 4,
-  },
-];
+const tracks = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
 
 export const mixerMachine = setup({
   types: {
