@@ -27,7 +27,13 @@ export const mixerMachine = setup({
       trackActorRefs: ActorRefFrom<typeof trackMachine>[];
       tracks: SourceTrack[];
     },
-    events: {} as { type: "TOGGLE_MUTE" } | { type: "TOGGLE_SOLO" },
+    events: {} as
+      | {
+          type: "SOLO";
+          trackInfo: { track: SourceTrack };
+          systemId: string;
+        }
+      | { type: "MUTED_BY_SOLO"; id: string },
   },
   actions: {
     buildTracks: assign(({ context, spawn, self }) => {
@@ -70,8 +76,7 @@ export const mixerMachine = setup({
           }),
         },
         MUTED_BY_SOLO: {
-          actions: enqueueActions(({ context, event, enqueue }) => {
-            const currentTrackId = event.id;
+          actions: enqueueActions(({ context, enqueue }) => {
             const mutedTracks = context.trackActorRefs?.filter(
               (trackActor) => !trackActor.getSnapshot().context.soloed,
             );
@@ -79,12 +84,9 @@ export const mixerMachine = setup({
               mutedTracks?.length === context.trackActorRefs!.length;
 
             context.trackActorRefs?.forEach((trackActor) => {
-              const { soloed, track } = trackActor.getSnapshot().context;
+              const { soloed } = trackActor.getSnapshot().context;
 
               if (!soloed) {
-                if (currentTrackId === track.id) {
-                  console.log("unsoloed!");
-                }
                 enqueue.sendTo(trackActor, {
                   type: "MUTE",
                 });

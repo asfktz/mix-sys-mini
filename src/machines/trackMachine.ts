@@ -1,4 +1,4 @@
-import { mixerMachine } from "./mixerMachine";
+import mixerMachine from "./mixerMachine";
 import { assign, setup, ActorRefFrom } from "xstate";
 
 type SourceTrack = {
@@ -14,9 +14,13 @@ export const trackMachine = setup({
     context: {} as {
       muted: boolean;
       soloed: boolean;
+      track: SourceTrack;
       trackActorRef: ActorRefFrom<typeof mixerMachine>;
     },
-    events: {} as { type: "SOLO" } | { type: "MUTE" } | { type: "UNMUTE" },
+    events: {} as
+      | { type: "SOLO"; trackInfo: { track: SourceTrack } }
+      | { type: "MUTE" }
+      | { type: "UNMUTE" },
   },
   actions: {
     toggleSolo: assign(({ context }) => {
