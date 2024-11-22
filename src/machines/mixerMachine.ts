@@ -119,5 +119,7 @@ export const mixerMachine = setup({
   },
 });
 
-export const globalActor = createActor(mixerMachine);
+export const globalActor = createActor(mixerMachine, {
+  systemId: "mixer",
+});
 globalActor.start();
