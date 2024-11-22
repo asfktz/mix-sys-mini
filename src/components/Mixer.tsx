@@ -1,11 +1,13 @@
 import Track from "./Track";
-import { MixerContext } from "../machines/mixerMachine";
+import { globalActor } from "../machines/mixerMachine";
 import { ActorRefFrom } from "xstate";
 import { trackMachine } from "@/machines/trackMachine";
+import { useSelector } from "@xstate/react";
 
 function Mixer() {
-  const { trackActorRefs, message } = MixerContext.useSelector(
-    (state) => state.context,
+  const { trackActorRefs, message } = useSelector(
+    globalActor,
+    (snapshot) => snapshot.context,
   );
 
   const tracks = trackActorRefs?.map(

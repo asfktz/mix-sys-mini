@@ -1,6 +1,11 @@
-import { assign, setup, ActorRefFrom, enqueueActions } from "xstate";
+import {
+  assign,
+  setup,
+  ActorRefFrom,
+  enqueueActions,
+  createActor,
+} from "xstate";
 import { trackMachine } from "./trackMachine";
-import { createActorContext } from "@xstate/react";
 
 type SourceTrack = {
   id: string;
@@ -114,4 +119,5 @@ export const mixerMachine = setup({
   },
 });
 
-export const MixerContext = createActorContext(mixerMachine);
+export const globalActor = createActor(mixerMachine);
+globalActor.start();

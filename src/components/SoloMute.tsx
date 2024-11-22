@@ -2,7 +2,7 @@ import { useSelector } from "@xstate/react";
 import { Toggle } from "./Buttons";
 import { ActorRefFrom } from "xstate";
 import { trackMachine } from "@/machines/trackMachine";
-import { MixerContext } from "../machines/mixerMachine";
+import { globalActor } from "../machines/mixerMachine";
 
 type Props = {
   trackActor: ActorRefFrom<typeof trackMachine>;
@@ -11,7 +11,6 @@ type Props = {
 function SoloMute({ trackActor }: Props) {
   const { context } = useSelector(trackActor, (state) => state);
   const currentTrackId = context.track.id;
-  const { send } = MixerContext.useActorRef();
 
   return (
     <div className="flex gap8">
@@ -19,7 +18,7 @@ function SoloMute({ trackActor }: Props) {
         id={`trackSolo${currentTrackId}`}
         checked={context.soloed}
         onChange={() => {
-          return send({
+          return globalActor.send({
             type: "SOLO",
             trackInfo: context,
             systemId: trackActor.id,
