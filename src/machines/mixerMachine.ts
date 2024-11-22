@@ -97,6 +97,10 @@ export const mixerMachine = setup({
                   type: "MUTE",
                 });
               } else {
+                enqueue.sendTo(({ system }) => system.get("mixer"), {
+                  type: "SET_MESSAGE",
+                  message: `${track.id} soloed`,
+                });
                 enqueue.sendTo(trackActor, {
                   type: "UNMUTE",
                 });
