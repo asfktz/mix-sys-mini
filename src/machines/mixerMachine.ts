@@ -60,6 +60,13 @@ export const mixerMachine = setup({
   states: {
     initializing: {
       entry: "buildTracks",
+      after: {
+        250: {
+          target: "ready",
+        },
+      },
+    },
+    ready: {
       on: {
         SOLO: {
           actions: enqueueActions(({ event, enqueue }) => {
@@ -78,7 +85,7 @@ export const mixerMachine = setup({
           actions: enqueueActions(({ context, event, enqueue }) => {
             const currentTrackId = event.id;
             const mutedTracks = context.trackActorRefs?.filter(
-              (trackActor) => !trackActor.getSnapshot().context.soloed,
+              (trackActor) => !trackActor.getSnapshot().context.soloed
             );
             const allTracksMuted =
               mutedTracks?.length === context.trackActorRefs!.length;
