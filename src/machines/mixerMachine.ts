@@ -96,7 +96,7 @@ export const mixerMachine = setup({
                 enqueue.sendTo(trackActor, {
                   type: "MUTE",
                 });
-              } else {
+              } else if (currentTrackId === track.id) {
                 enqueue.sendTo(({ system }) => system.get("mixer"), {
                   type: "SET_MESSAGE",
                   message: `${track.id} soloed`,
