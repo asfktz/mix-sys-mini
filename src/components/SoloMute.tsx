@@ -1,7 +1,7 @@
 import { useSelector } from "@xstate/react";
 import { Toggle } from "./Buttons";
 import { ActorRefFrom } from "xstate";
-import { trackMachine } from "@/machines/trackMachine";
+import { trackMachine } from "../machines/trackMachine";
 import { globalActor } from "../machines/mixerMachine";
 
 type Props = {

@@ -1,11 +1,12 @@
 import {
-  assign,
-  setup,
   ActorRefFrom,
-  enqueueActions,
+  assign,
   createActor,
+  enqueueActions,
+  forwardTo,
+  setup,
 } from "xstate";
-import { trackMachine } from "./trackMachine";
+import { TrackActor, TrackEvents, trackMachine } from "./trackMachine";
 
 type SourceTrack = {
   id: string;
@@ -18,32 +19,27 @@ const tracks = [
   { id: "track4" },
 ];
 
+type MixerEvents = TrackEvents & { trackId: string };
+type MixerContext = {
+  trackActorRefs: TrackActor[];
+  tracks: SourceTrack[];
+  message?: string | null;
+};
+
 export const mixerMachine = setup({
   types: {
-    context: {} as {
-      trackActorRefs: ActorRefFrom<typeof trackMachine>[];
-      tracks: SourceTrack[];
-      message?: string | null;
-    },
-    events: {} as
-      | {
-          type: "SOLO";
-          trackInfo: { track: SourceTrack };
-          systemId: string;
-        }
-      | { type: "SET_MESSAGE"; message: string }
-      | { type: "MUTED_BY_SOLO"; id: string },
+    context: {} as MixerContext,
+    events: {} as MixerEvents,
+  },
+  actors: {
+    trackActor: trackMachine,
   },
   actions: {
-    buildTracks: assign(({ context, spawn, self }) => {
+    buildTracks: assign(({ context, spawn }) => {
       const trackActorRefs = context.tracks.map((track) => {
-        return spawn(trackMachine, {
-          systemId: track.id,
+        return spawn("trackActor", {
           id: track.id,
-          input: {
-            track,
-            trackActorRef: self,
-          },
+          input: { track },
         });
       });
 
@@ -68,61 +64,49 @@ export const mixerMachine = setup({
     },
     ready: {
       on: {
-        SOLO: {
-          actions: enqueueActions(({ event, enqueue }) => {
-            enqueue.sendTo(({ system }) => system.get(event.systemId), {
-              type: "SOLO",
-              trackInfo: event.trackInfo,
-            });
+        "track.solo": {
+          actions: enqueueActions(({ event, enqueue, context }) => {
+            context.trackActorRefs.forEach((trackActor) => {
+              const selectedTrack = trackActor.id === event.trackId;
+              const trackSnapshot = trackActor.getSnapshot();
 
-            enqueue.sendTo(({ system }) => system.get("mixer"), {
-              type: "MUTED_BY_SOLO",
-              id: event.trackInfo.track.id,
+              if (selectedTrack) {
+                enqueue.sendTo(trackActor, { type: "track.solo" });
+                return;
+              }
+
+              if (!trackSnapshot.matches("soloing")) {
+                enqueue.sendTo(trackActor, { type: "track.mute" });
+              }
             });
           }),
         },
-        MUTED_BY_SOLO: {
+        "track.reset": {
           actions: enqueueActions(({ context, event, enqueue }) => {
-            const currentTrackId = event.id;
-            const mutedTracks = context.trackActorRefs?.filter(
-              (trackActor) => !trackActor.getSnapshot().context.soloed
+            const selectedTrack = selectTrackActorById(context, event.trackId)!;
+
+            const soloingTracks = context.trackActorRefs.filter((trackActor) =>
+              trackActor.getSnapshot().matches("soloing"),
             );
-            const allTracksMuted =
-              mutedTracks?.length === context.trackActorRefs!.length;
 
-            context.trackActorRefs?.forEach((trackActor) => {
-              const { soloed, track } = trackActor.getSnapshot().context;
+            const hasMultipleSoloedTracks = soloingTracks.length > 1;
 
-              if (!soloed) {
-                if (currentTrackId === track.id) {
-                  enqueue.sendTo(({ system }) => system.get("mixer"), {
-                    type: "SET_MESSAGE",
-                    message: `${track.id} unsoloed`,
-                  });
-                }
-                enqueue.sendTo(trackActor, {
-                  type: "MUTE",
-                });
-              } else if (currentTrackId === track.id) {
-                enqueue.sendTo(({ system }) => system.get("mixer"), {
-                  type: "SET_MESSAGE",
-                  message: `${track.id} soloed`,
-                });
-                enqueue.sendTo(trackActor, {
-                  type: "UNMUTE",
-                });
-              }
-              if (allTracksMuted) {
-                enqueue.sendTo(trackActor, {
-                  type: "UNMUTE",
-                });
-              }
-            });
+            if (hasMultipleSoloedTracks) {
+              enqueue.sendTo(selectedTrack, { type: "track.mute" });
+            } else {
+              context.trackActorRefs.forEach((trackActor) => {
+                enqueue.sendTo(trackActor, { type: "track.reset" });
+              });
+            }
           }),
         },
-        SET_MESSAGE: {
-          actions: assign({
-            message: ({ event }) => event.message,
+
+        // Delegate all other events that start with "track.*" (such as "track.mute")
+        // to the selected track actor as is.
+        "track.*": {
+          actions: enqueueActions(({ context, event, enqueue }) => {
+            const trackActor = selectTrackActorById(context, event.trackId);
+            enqueue.sendTo(trackActor, event);
           }),
         },
       },
@@ -130,7 +114,12 @@ export const mixerMachine = setup({
   },
 });
 
-export const globalActor = createActor(mixerMachine, {
-  systemId: "mixer",
-});
+function selectTrackActorById(context: MixerContext, actorId: string) {
+  return context.trackActorRefs.find(
+    (trackActor) => trackActor.id === actorId,
+  )!;
+}
+
+export const globalActor = createActor(mixerMachine);
+
 globalActor.start();
