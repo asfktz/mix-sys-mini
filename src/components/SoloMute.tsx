@@ -12,16 +12,21 @@ function SoloMute({ trackActor }: Props) {
   const { context } = useSelector(trackActor, (state) => state);
   const currentTrackId = context.track.id;
 
+  const isSoloing = useSelector(trackActor, (state) =>
+    state.matches("soloing"),
+  );
+
+  const isMuted = useSelector(trackActor, (state) => state.matches("muted"));
+
   return (
     <div className="flex gap8">
       <Toggle
         id={`trackSolo${currentTrackId}`}
-        checked={context.soloed}
-        onChange={() => {
-          return globalActor.send({
-            type: "SOLO",
-            trackInfo: context,
-            systemId: trackActor.id,
+        checked={isSoloing}
+        onChange={(event) => {
+          globalActor.send({
+            type: event.target.checked ? "track.solo" : "track.reset",
+            trackId: trackActor.id,
           });
         }}
       >
@@ -30,10 +35,11 @@ function SoloMute({ trackActor }: Props) {
       <Toggle
         id={`trackMute${currentTrackId}`}
         className="mute"
-        checked={context.muted}
-        onChange={() => {
-          trackActor.send({
-            type: context.muted ? "UNMUTE" : "MUTE",
+        checked={isMuted}
+        onChange={(event) => {
+          globalActor.send({
+            type: event.target.checked ? "track.mute" : "track.reset",
+            trackId: trackActor.id,
           });
         }}
       >

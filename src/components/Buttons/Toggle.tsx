@@ -1,3 +1,5 @@
+import {ChangeEvent} from "react";
+
 type Props = {
   id: string;
   name?: string;
@@ -6,8 +8,9 @@ type Props = {
   children: React.ReactNode;
   checked?: boolean | undefined;
   className?: string;
-  onChange: (e: React.FormEvent<HTMLInputElement>) => void;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
 };
+
 
 function Toggle({
   children,

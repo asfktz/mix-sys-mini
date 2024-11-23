@@ -1,61 +1,67 @@
-import { mixerMachine } from "./mixerMachine";
-import { assign, setup, ActorRefFrom } from "xstate";
+import { ActorRefFrom, setup } from "xstate";
 
 type SourceTrack = {
   id: string;
 };
 
+export type TrackEvents =
+  | { type: "track.solo" }
+  | { type: "track.mute" }
+  | { type: "track.reset" };
+
 export const trackMachine = setup({
   types: {
     input: {} as {
       track: SourceTrack;
-      trackActorRef: ActorRefFrom<typeof mixerMachine>;
     },
     context: {} as {
-      muted: boolean;
-      soloed: boolean;
       track: SourceTrack;
-      trackActorRef: ActorRefFrom<typeof mixerMachine>;
     },
-    events: {} as
-      | { type: "SOLO"; trackInfo: { track: SourceTrack } }
-      | { type: "MUTE" }
-      | { type: "UNMUTE" },
+    events: {} as TrackEvents,
   },
   actions: {
-    toggleSolo: assign(({ context }) => {
-      return { soloed: !context.soloed, muted: context.muted };
-    }),
-    muteTrack: assign({ muted: true }),
-    unmuteTrack: assign({ muted: false }),
+    muteTrack: () => {
+      // TODO: Mute Track
+    },
+    unmuteTrack: () => {
+      // TODO: Unmute Track
+    },
+    soloTrack: () => {
+      // TODO: Solo Track
+    },
+    unsoloTrack: () => {
+      // TODO: Unsolo Track
+    },
   },
 }).createMachine({
   context: ({ input }) => ({
     track: input.track,
-    trackActorRef: input.trackActorRef,
-    muted: false,
-    soloed: false,
   }),
   initial: "idle",
   states: {
     idle: {
       on: {
-        SOLO: {
-          actions: {
-            type: "toggleSolo",
-          },
-        },
-        MUTE: {
-          actions: {
-            type: "muteTrack",
-          },
-        },
-        UNMUTE: {
-          actions: {
-            type: "unmuteTrack",
-          },
-        },
+        "track.solo": { target: "soloing" },
+        "track.mute": { target: "muted" },
+      },
+    },
+    soloing: {
+      entry: "soloTrack",
+      exit: "unsoloTrack",
+      on: {
+        "track.mute": { target: "muted" },
+        "track.reset": { target: "idle" },
+      },
+    },
+    muted: {
+      entry: "muteTrack",
+      exit: "unmuteTrack",
+      on: {
+        "track.solo": { target: "soloing" },
+        "track.reset": { target: "idle" },
       },
     },
   },
 });
+
+export type TrackActor = ActorRefFrom<typeof trackMachine>;
