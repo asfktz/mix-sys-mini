@@ -1,5 +1,6 @@
+import React from 'react';
 import { ActorRefFrom } from "xstate";
-import { trackMachine } from "@/machines/trackMachine";
+import { trackMachine } from "../machines/trackMachine";
 import SoloMute from "./SoloMute";
 
 interface TrackProps {

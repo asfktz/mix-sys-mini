@@ -1,3 +1,4 @@
+import React from 'react';
 import { useSelector } from "@xstate/react";
 import { Toggle } from "./Buttons";
 import { ActorRefFrom } from "xstate";
